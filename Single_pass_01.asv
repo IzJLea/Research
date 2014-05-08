@@ -51,7 +51,9 @@ display(DPt, 'Total single phase Pressure drop:');
 
 x=(Hin-Hvin)/(Hlin-Hvin);
 
-a0=[0;x;Rhoinl;Rhoinv];
+a0=0;
+
+
 
 options = optimoptions('fsolve','Display','iter');
 

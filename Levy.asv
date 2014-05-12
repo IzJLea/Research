@@ -1,6 +1,0 @@
-function F = Levy(a2,a1,a,Rhov)
-
-F =((1-a2)^2/(1-a1))+((a2^2)*Rhol/a1/Rhov)-(0.5*(1-a2)^2/((1-a1)^2))-0.5;
-
-display(a1, 'void fraction');
-

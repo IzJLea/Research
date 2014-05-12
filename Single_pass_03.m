@@ -49,16 +49,31 @@ display(DPt, 'Total single phase Pressure drop:');
 
 %% Two Phase Pressure drop
 
-x=(Hin-Hvin)/(Hlin-Hvin);
+Dens=Rhoinl/Rhoinv;
 
-a0=0;
+q=(Hin-Hvin)/(Hlin-Hvin);   % vapour quality (mass)
 
+p=(1-q)^2;
 
+t=q^2*Dens;
 
-options = optimoptions('fsolve','Display','iter');
+m=((1-q)^2)*0.5;
 
-[a,fval]= fsolve(Levy, a0, options);
+syms x
 
+void=solve((p*(1-x))-(t*x)-m/((1-x)^2)-0.5);
 
-display(a,'Void Fraction= ');
+display(void);
+
+%a=Levyvoid(x,Rhoinv,Rhoinl);
+
+%[result, fval, exitflag, output]=fsolve(@Levy, guess);
+
+%result;
+
+%fval;
+
+%Levy(guess);
+
+%output;
 

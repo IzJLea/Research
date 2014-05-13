@@ -61,7 +61,7 @@ m=((1-qual)^2)*0.5;
 
 syms x
 
-void=solve((p*(1-x))-(t*x)-m/((1-x)^2)-0.5);
+void=solve((p*(1-x))-(t*x)-(m/((1-x)^2))-0.5);
 
 display(void);
 

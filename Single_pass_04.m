@@ -23,17 +23,17 @@ display(reff);
 
 %% system information input
 
-Minput=input('Flowrate');
+Minput=25.8;    %kg/s coolant flowrate
 
-Rhoinl=input('Density of liquid');
+Rhoinl=780.6;   %kg/m^3 liquid water density at saturation conditions
 
-Rhoinv=input('Density of gas');
+Rhoinv=52.6;    %kg/m^3 water vapour density at saturation conditions
 
-Hlin=input('Liquid enthalpy');
+Hlin=1450;  %kJ/kg enthalpy of liquid water at saturation conditions
 
-Hvin=input('Gas enthalpy');
+Hvin=2706;  %kJ/kg enthalpy of gaseous water at saturation conditions
 
-Hin=input('Enthalpy of 2 phase flow');
+Hin=1550;   %kJ/kg enthalpy of fluid entering channel
 
 %% Single Phase Pressure drop
 

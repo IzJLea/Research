@@ -14,9 +14,9 @@ Hin=1550;   %kJ/kg enthalpy of fluid entering channel
 
 Dh=0.0074;  %m equivalent hydraulic diameter of channel
 
-Pin=11.380e6; %Pa pressure at channel inlet 
+Pin=5e6; %Pa pressure at channel inlet 
 
-Tin=273.15; %K saturation temperature at inlet pressure
+Tin=673.15; %K saturation temperature at inlet pressure
 
 %% Two Phase Pressure drop
 % water viscosity calculation

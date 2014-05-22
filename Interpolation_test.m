@@ -51,7 +51,14 @@ T=input('Temperature(0-100 C)');
 
 Pout=Lagint(x,y,T);
 
-display(Pout,'Saturation Pressure lagrange (MPa)');
+display(Pout,'Saturation Pressure using Lagrange(MPa)');
 
 
 %% Newton Interpolation
+ 
+
+P2out=Newint(x,y,T);
+
+display(P2out, 'Saturation Pressure using Newton (MPa)');
+
+

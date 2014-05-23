@@ -6,7 +6,7 @@
 
 Pin=11.380; % MPa 
 
-hin=1550; %enthalpy entering channel. kJ/kg
+hin=1500; %enthalpy entering channel. kJ/kg
 
 Minput=25.8; % kg/s
 

@@ -1,16 +1,20 @@
 %% Single pass
 %this is a model that describes a steady state operation of a CANDU
-%channel under many conditions.
+%channel with two phase flow and no heat input.
 
 %% system input
 
 Pin=11.380; % MPa 
 
-hin=2000; %enthalpy entering channel. kJ/kg
-
 Minput=25.8; % kg/s
 
+Qchannel=5.52; % MW
+
 Tbulk=320.7411;    %Celsius
+
+hin=1.3e3;      %enthalpy of entering fluid
+
+hout=Qchannel*1000/Minput+hin; %enthalpy entering channel. kJ/kg
 
 %% Retrieving H2O physical data (for interpolation)
 
@@ -149,7 +153,7 @@ display(DPt, 'Total single phase Pressure drop:');
 %% Two Phase pressure drop
 %thermal equilibrium vapour weight fraction and true weight fraction
 
-x=(hin-hfsys)/(hgsys-hfsys);
+x=(hout-hfsys)/(hgsys-hfsys);
 
 xd=-Cpl*(Tsys-Tbulk)/hfgsys;
 
@@ -221,5 +225,33 @@ display(DPt, 'Single phase pressure drop: ');
 
 display(DPt2p, 'Two phase pressure drop: ');
 
-
+if hout <= hfsys;
+    
+    display('Single Phase Flow (Liquid)');
+    
+    display(DPt, 'Pressure drop: ');
+    
+    display(hout, 'Enthalpy (kJ/kg)');
+    
+else
+    if hfsys<hout&&hout<hgsys
+        
+        display('Two phase flow');
+        
+        display(DPt2p, 'Pressure drop: ');
+       
+        display(alpha, 'volumetric vapour fraction');
+        
+        display(hout, 'Enthalpy (kJ/kg)');
+        
+    else
+        if hout>hgsys
+            display('Single phase pressure drop (gas)');
+            
+            display(DPt2p, 'Pressure Drop: ');
+            
+            display(hout, 'Enthalpy (kJ/kg)');
+        end
+    end
+end
 

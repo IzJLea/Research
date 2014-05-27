@@ -1,8 +1,27 @@
 %% Single pass
 %this is a model that describes a steady state operation of a CANDU
 %channel with two phase flow and no heat input.
+%% Resevoir initial conditions
 
-%% system input
+%mass of coolant
+
+Mres=173.3385e3;  % kg  
+
+hres=1.3e3; % kJ/kg
+
+Tres=267.2; % C
+
+%% set up of time increments
+
+tpass=1; % seconds
+
+n=1; % # of passes
+
+ch=240; % # of channels per pass
+
+k=1;
+for k= 1:n
+    %% system input
 
 Pin=11380; % kPa 
 
@@ -10,14 +29,14 @@ Minput=25.8; % kg/s
 
 Qchannel=5.52; % MW
 
-Tbulk=320.7411;    %Celsius
+Tbulk=Tres;    % Celsius
 
-hin=1.3e3;      %enthalpy of entering fluid
+hin=hres;      % enthalpy of entering fluid
 
 %% Retrieving H2O physical data (for interpolation)
 
 % Temperature Data
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','A24:A52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','A32:A52');
 
 WaterSaturationPropertiesTemperatureTable2 = reshape([raw{:}],size(raw));
 
@@ -27,7 +46,7 @@ Th2o=WaterSaturationPropertiesTemperatureTable2;
 
 %Saturation Pressure
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','B24:B52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','B32:B52');
 
 WaterSaturationPropertiesTemperatureTable8 = reshape([raw{:}],size(raw));
 
@@ -37,7 +56,7 @@ Ph2o=WaterSaturationPropertiesTemperatureTable8.*1000;
 
 %liquid specific volume
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','C24:C52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','C32:C52');
 
 WaterSaturationPropertiesTemperatureTable3 = reshape([raw{:}],size(raw));
 
@@ -47,7 +66,7 @@ vsf=WaterSaturationPropertiesTemperatureTable3;
 
 %gaseous specific volume
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','D24:D52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','D32:D52');
 
 WaterSaturationPropertiesTemperatureTable4 = reshape([raw{:}],size(raw));
 
@@ -57,7 +76,7 @@ vsg=WaterSaturationPropertiesTemperatureTable4;
 
 %fluid enthalpy
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','G24:G52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','G32:G52');
 
 WaterSaturationPropertiesTemperatureTable5 = reshape([raw{:}],size(raw));
 
@@ -67,7 +86,7 @@ hf=WaterSaturationPropertiesTemperatureTable5;
 
 %latent heat
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','H24:H52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','H32:H52');
 
 WaterSaturationPropertiesTemperatureTable6 = reshape([raw{:}],size(raw));
 
@@ -77,7 +96,7 @@ hfg=WaterSaturationPropertiesTemperatureTable6;
 
 %gaseous enthalpy
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','I24:I52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','I32:I52');
 
 WaterSaturationPropertiesTemperatureTable7 = reshape([raw{:}],size(raw));
 
@@ -100,7 +119,9 @@ hgsys=Lagint(Ph2o,hg,Pin); %kJ/kg
 
 %liquid density
 
-rholsys=Lagint(Ph2o, vsf,Pin).^-1; %kg/m^3
+vsfsys=Lagint(Ph2o, vsf,Pin); %kg/m^3
+
+rholsys=1/vsfsys;
 
 %gaseous density
 
@@ -137,8 +158,6 @@ Rho=780.6; %kg/m^3
 keff=DP/(M^2);
 
 reff=keff*Rho;
-
-display(reff);
 
 %% Single Phase Pressure drop
 
@@ -227,6 +246,15 @@ DPt2p=DPt*rholsys/rhoave;
 
 %display(DPt2p, 'Two phase pressure drop: ');
 
+Qplus=(hout-hin)*Minput*tpass*ch;
+
+hin=hin+(Qplus/Mres);
+
+k=k+1;
+
+display(k);
+end;
+
 if hout <= hfsys;
     
     display('Single Phase Flow (Liquid)');
@@ -259,3 +287,4 @@ else
     end
 end
 
+display(hres);

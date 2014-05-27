@@ -1,23 +1,22 @@
 %% Single pass
 %this is a model that describes a steady state operation of a CANDU
 %channel with two phase flow and no heat input.
+%% Resevoir initial conditions
 
-%% system input
+%mass of coolant
 
-Pin=11380; % kPa 
+Mres=173.3385e3;  % kg  
 
-Minput=25.8; % kg/s
+hres=1.3e3; % kJ/kg
 
-Qchannel=5.52; % MW
+hresinit=hres;
 
-Tbulk=320.7411;    %Celsius
-
-hin=1.3e3;      %enthalpy of entering fluid
+Tres=267.2; % C
 
 %% Retrieving H2O physical data (for interpolation)
 
 % Temperature Data
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','A24:A52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','A32:A52');
 
 WaterSaturationPropertiesTemperatureTable2 = reshape([raw{:}],size(raw));
 
@@ -27,7 +26,7 @@ Th2o=WaterSaturationPropertiesTemperatureTable2;
 
 %Saturation Pressure
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','B24:B52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','B32:B52');
 
 WaterSaturationPropertiesTemperatureTable8 = reshape([raw{:}],size(raw));
 
@@ -37,7 +36,7 @@ Ph2o=WaterSaturationPropertiesTemperatureTable8.*1000;
 
 %liquid specific volume
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','C24:C52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','C32:C52');
 
 WaterSaturationPropertiesTemperatureTable3 = reshape([raw{:}],size(raw));
 
@@ -47,7 +46,7 @@ vsf=WaterSaturationPropertiesTemperatureTable3;
 
 %gaseous specific volume
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','D24:D52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','D32:D52');
 
 WaterSaturationPropertiesTemperatureTable4 = reshape([raw{:}],size(raw));
 
@@ -57,7 +56,7 @@ vsg=WaterSaturationPropertiesTemperatureTable4;
 
 %fluid enthalpy
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','G24:G52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','G32:G52');
 
 WaterSaturationPropertiesTemperatureTable5 = reshape([raw{:}],size(raw));
 
@@ -67,7 +66,7 @@ hf=WaterSaturationPropertiesTemperatureTable5;
 
 %latent heat
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','H24:H52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','H32:H52');
 
 WaterSaturationPropertiesTemperatureTable6 = reshape([raw{:}],size(raw));
 
@@ -77,13 +76,55 @@ hfg=WaterSaturationPropertiesTemperatureTable6;
 
 %gaseous enthalpy
 
-[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','I24:I52');
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\H2O_TempSat.xls','Sheet1','I32:I52');
 
 WaterSaturationPropertiesTemperatureTable7 = reshape([raw{:}],size(raw));
 
 clearvars raw;
 
 hg=WaterSaturationPropertiesTemperatureTable7;
+
+% steam heat capacity temp
+
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\Steam Heat capacity.xlsx','Sheet1','B2:B15');
+
+Tshc = reshape([raw{:}],size(raw));
+
+clearvars raw;
+
+% steam heat capacity 
+
+[~, ~, raw] = xlsread('C:\Users\Izaak\Documents\Research\Steam Heat capacity.xlsx','Sheet1','C2:C15');
+
+Cpshc = reshape([raw{:}],size(raw));
+
+clearvars raw;
+
+%% set up of time increments
+
+tpass=10; % seconds
+
+n=20; % # of passes
+
+ch=240; % # of channels per pass
+
+k=1;
+
+hresfinal=Lagint(Th2o, hg, Tres);
+
+hin=hres;      % enthalpy of entering fluid
+
+while hin <= hresfinal
+    %% system input
+
+Pin=11380; % kPa 
+
+Minput=25.8; % kg/s
+
+Qchannel=5.52; % MW
+
+Tbulk=Tres;    % Celsius
+
 
 %% Calculation of system properties
 %temperature (saturation)
@@ -100,7 +141,9 @@ hgsys=Lagint(Ph2o,hg,Pin); %kJ/kg
 
 %liquid density
 
-rholsys=Lagint(Ph2o, vsf,Pin).^-1; %kg/m^3
+vsfsys=Lagint(Ph2o, vsf,Pin); %kg/m^3
+
+rholsys=1/vsfsys;
 
 %gaseous density
 
@@ -113,6 +156,10 @@ hfgsys=Lagint(Ph2o,hfg,Pin); %kJ/kg
 % liquid specific heat
 
 Cpl=4.1855*(0.996185+(0.0002874*(((Tsys+100)/100)^5.26))+(0.01116*10^(-0.036*Tsys)));
+
+% gaseous specific heat
+
+Cpg=Lagint(Tshc,Cpshc,  Tsys);
 
 % enthalpy out of channel
 
@@ -138,8 +185,6 @@ keff=DP/(M^2);
 
 reff=keff*Rho;
 
-display(reff);
-
 %% Single Phase Pressure drop
 
 DPm=keff.*Minput.^2;
@@ -157,7 +202,9 @@ DPt=sum(DPd);
 
 x=(hout-hfsys)/(hgsys-hfsys);
 
-xd=-Cpl*(Tsys-Tbulk)/hfgsys;
+Cpave=((Cpl*(1-x))+(Cpg*x)*18.02);
+
+xd=-Cpave*(Tsys-Tbulk)/hfgsys;
 
 xprime=x-(xd*exp((x/xd)-1));
 
@@ -227,6 +274,12 @@ DPt2p=DPt*rholsys/rhoave;
 
 %display(DPt2p, 'Two phase pressure drop: ');
 
+Qplus=(hout-hin)*Minput*tpass*ch;
+
+hin=hin+(Qplus/Mres);
+
+hres=hin;
+
 if hout <= hfsys;
     
     display('Single Phase Flow (Liquid)');
@@ -259,3 +312,44 @@ else
     end
 end
 
+display(hin);
+
+display(k);
+
+k=k+1;
+
+end;
+
+if hout <= hfsys;
+    
+    display('Single Phase Flow (Liquid)');
+    
+    display(DPt, 'Pressure drop: ');
+    
+    display(hout, 'Enthalpy (kJ/kg)');
+    
+else
+    if hfsys<hout&&hout<hgsys
+        
+        display('Two phase flow');
+        
+        display(DPt2p, 'Pressure drop: ');
+        
+        display(xprime, 'mass fraction vapour: ');
+       
+        display(alpha, 'volumetric vapour fraction');
+        
+        display(hout, 'Enthalpy (kJ/kg)');
+        
+    else
+        if hout>hgsys
+            display('Single phase flow (gas)');
+            
+            display(DPt2p, 'Pressure Drop: ');
+            
+            display(hout, 'Enthalpy (kJ/kg)');
+        end
+    end
+end
+
+display(hin);
